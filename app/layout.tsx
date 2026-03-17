@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import SearchBar from "@/components/SearchBar";
-import { Suspense } from "react"; // 1. Import Suspense
+import Navbar from "@/components/Navbar"; // Make sure this path matches where you saved it!
 
 export const metadata: Metadata = {
-  title: "TransportRoute App",
-  description: "Manage transit routes efficiently",
+  title: "TransportRoute | Dashboard",
+  description: "Manage transit routes and vehicle fleets efficiently.",
 };
+
+const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({
   children,
@@ -16,34 +17,29 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="bg-slate-50 text-slate-900 min-h-screen font-sans selection:bg-indigo-100 selection:text-indigo-900">
-        <nav className="bg-white/80 backdrop-blur-md shadow-sm border-b border-slate-200 sticky top-0 z-50">
-          <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
-            <Link href="/" className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-80 transition">
-              TransportRoute
-            </Link>
-            
-            <div className="flex items-center gap-4">
-              {/* 2. Wrap SearchBar in Suspense with a visual fallback */}
-              <Suspense fallback={
-                <div className="w-48 md:w-64 h-10 bg-slate-100 animate-pulse rounded-md border border-slate-200"></div>
-              }>
-                <SearchBar />
-              </Suspense>
+      <body className={`${inter.className} bg-gray-50 text-gray-900 min-h-screen flex flex-col selection:bg-purple-100 selection:text-purple-900`}>
+        
+        {/* We injected the smart Client Component here */}
+        <Navbar />
 
-              <Link 
-                href="/create" 
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-2.5 rounded-xl font-bold hover:shadow-lg hover:shadow-indigo-200 hover:-translate-y-0.5 transition-all text-sm"
-              >
-                + Create Route
-              </Link>
-            </div>
-          </div>
-        </nav>
-
-        <main className="max-w-5xl mx-auto px-4 py-8">
+        <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 py-8">
           {children}
         </main>
+
+        <footer className="bg-white border-t border-gray-200 mt-auto">
+          <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-gray-400 font-medium">
+              &copy; 2026 TransportRoute Management System.
+            </p>
+            <div className="flex gap-4 text-sm text-gray-400">
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                System Operational
+              </span>
+            </div>
+          </div>
+        </footer>
+
       </body>
     </html>
   );
