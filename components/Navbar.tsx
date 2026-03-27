@@ -1,10 +1,20 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { apiFetch } from '@/lib/apiClient';
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Check the UI state on mount
+  useEffect(() => {
+    const checkLoginState = localStorage.getItem('isLoggedIn') === 'true';
+    setIsLoggedIn(checkLoginState);
+  }, [pathname]); // Re-run this check whenever the route changes
 
   // A clean array to map through so we don't repeat our styling logic
   const navLinks = [
@@ -12,6 +22,23 @@ export default function Navbar() {
     { name: 'Categories', href: '/categories' },
     { name: 'Vehicles', href: '/vehicles' },
   ];
+
+  const handleLogout = async () => {
+    try {
+      // 1. Tell the C# API to destroy the HttpOnly cookie
+      await apiFetch('/Auth/logout', { method: 'POST' });
+      
+      // 2. Clear our UI flag
+      localStorage.removeItem('isLoggedIn');
+      setIsLoggedIn(false);
+      
+      // 3. Redirect to login
+      router.push('/login');
+    }
+    catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   return (
     <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm transition-all">
@@ -49,6 +76,32 @@ export default function Navbar() {
           })}
         </div>
         
+        {/* Authentication Buttons Split */}
+          <div className="ml-4 pl-4 border-l border-gray-200 flex gap-2">
+            {isLoggedIn ? (
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 rounded-md font-medium text-sm text-red-600 hover:bg-red-50 transition-all"
+              >
+                Log Out
+              </button>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="px-4 py-2 rounded-md font-medium text-sm text-gray-700 hover:bg-gray-100 transition-all"
+                >
+                  Log In
+                </Link>
+                <Link
+                  href="/register"
+                  className="px-4 py-2 rounded-md font-medium text-sm text-white bg-purple-600 hover:bg-purple-700 transition-all shadow-sm"
+                >
+                  Register
+                </Link>
+              </>
+            )}
+          </div>
       </div>
     </nav>
   );

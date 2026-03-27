@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { apiFetch } from "@/lib/apiClient";
 
 export default function RouteActions({ routeId }: { routeId: number }) {
   const router = useRouter();
@@ -18,7 +19,7 @@ export default function RouteActions({ routeId }: { routeId: number }) {
 
     try {
       // 2. Send the DELETE request to your C# backend
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/TransitRoutes/${routeId}`, {
+      const res = await apiFetch(`/TransitRoutes/${routeId}`, {
         method: "DELETE",
       });
 
@@ -42,7 +43,7 @@ export default function RouteActions({ routeId }: { routeId: number }) {
         It will navigate to /edit/[id]
       */}
       <Link 
-        href={`/edit/${routeId}`}
+        href={`/routes/edit/${routeId}`}
         className="p-2.5 rounded-xl text-amber-500 bg-amber-50 hover:bg-amber-500 hover:text-white transition-all shadow-sm hover:shadow-md focus:ring-2 focus:ring-amber-400 focus:outline-none"
         aria-label="Edit route"
       >

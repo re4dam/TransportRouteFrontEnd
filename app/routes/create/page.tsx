@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { apiFetch } from "@/lib/apiClient";
 
 // Generate an array of hourly times from "00:00" to "23:00"
 const timeOptions = Array.from({ length: 24 }, (_, i) => {
@@ -36,7 +37,7 @@ export default function CreateRoutePage() {
     setError("");
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/TransitRoutes`, {
+      const res = await apiFetch(`/TransitRoutes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -49,7 +50,7 @@ export default function CreateRoutePage() {
       }
 
       router.refresh();
-      router.push("/");
+      router.push("/routes");
     } catch (err: any) {
       setError(err.message);
       setIsSubmitting(false);

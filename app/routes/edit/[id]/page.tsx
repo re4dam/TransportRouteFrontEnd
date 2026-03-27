@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
+import { apiFetch } from "@/lib/apiClient";
 
 // Generate the same array of hourly times
 const timeOptions = Array.from({ length: 24 }, (_, i) => {
@@ -31,7 +32,7 @@ export default function EditRoutePage() {
   useEffect(() => {
     const fetchRoute = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/TransitRoutes/${routeId}`);
+        const res = await apiFetch(`/TransitRoutes/${routeId}`);
         if (!res.ok) throw new Error("Failed to fetch route data.");
         
         const data = await res.json();
@@ -69,13 +70,9 @@ export default function EditRoutePage() {
 
     try {
       // Send the PUT request to update the specific record
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/TransitRoutes/${routeId}`, {
+      const res = await apiFetch(`/TransitRoutes/${routeId}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        // We send the same DTO structure as the Create page
-        body: JSON.stringify(formData), 
+        body: JSON.stringify(formData),
       });
 
       if (!res.ok) {

@@ -1,6 +1,7 @@
 import RouteActions from "@/components/RouteActions";
 import Link from "next/link";
 import { TransitRouteResponse  } from "@/types";
+import { apiFetch } from "@/lib/apiClient"; 
 
 // Next.js 15 treats searchParams as a Promise
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -9,7 +10,7 @@ type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 async function getTransitRoutes(keyword?: string, pageNumber: number = 1) {
   if (keyword) {
     // Hit the Paginated Search Endpoint
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/TransitRoutes/search?keyword=${encodeURIComponent(keyword)}&pageNumber=${pageNumber}&pageSize=10`, {
+    const res = await apiFetch(`/TransitRoutes/search?keyword=${encodeURIComponent(keyword)}&pageNumber=${pageNumber}&pageSize=10`, {
       cache: 'no-store'
     });
     
@@ -19,7 +20,7 @@ async function getTransitRoutes(keyword?: string, pageNumber: number = 1) {
     return res.json(); // Returns the PaginatedResponseDto shape
   } else {
     // Hit the standard GET Endpoint
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/TransitRoutes`, { cache: 'no-store' });
+    const res = await apiFetch(`/TransitRoutes`, { cache: 'no-store' });
     if (!res.ok) throw new Error('Failed to fetch routes');
     
     const data = await res.json();
