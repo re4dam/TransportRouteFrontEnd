@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { CategoryRequest } from '@/types';
+import { apiFetch } from '@/lib/apiClient';
 
 export default function EditCategoryPage() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export default function EditCategoryPage() {
   useEffect(() => {
     const fetchCategory = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/Category/${categoryId}`);
+        const response = await apiFetch(`/Category/${categoryId}`, {credentials: 'include'});
         if (!response.ok) throw new Error('Category not found.');
         
         const data = await response.json();
@@ -44,10 +45,12 @@ export default function EditCategoryPage() {
       categoryName: categoryName.trim(),
     };
 
+    const token = sessionStorage.getItem('csrf_token');
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/Category/${categoryId}`, {
+      const response = await apiFetch(`/Category/${categoryId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token || '' },
         body: JSON.stringify(payload),
       });
 
