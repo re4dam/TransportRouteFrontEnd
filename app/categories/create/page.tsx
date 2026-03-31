@@ -3,7 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { CategoryRequest } from '@/types'; // Adjust path as needed
+import { CategoryRequest } from '@/types';
+import { apiFetch } from '@/lib/apiClient';
+
+export const dynamic = 'force-dynamic';
 
 export default function CreateCategoryPage() {
   const router = useRouter();
@@ -20,10 +23,12 @@ export default function CreateCategoryPage() {
       categoryName: categoryName.trim(),
     };
 
+    const token = sessionStorage.getItem('csrf_token');
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/Category`, {
+      const response = await apiFetch(`/Category`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token || '' },
         body: JSON.stringify(payload),
       });
 
