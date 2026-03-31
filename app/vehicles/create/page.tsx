@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { VehicleRequest, CategoryResponse, TransitRouteResponse } from '@/types';
+import { apiFetch } from '@/lib/apiClient';
+
+export const dynamic = 'force-dynamic';
 
 export default function CreateVehiclePage() {
   const router = useRouter();
@@ -27,8 +30,8 @@ export default function CreateVehiclePage() {
     const fetchDropdownData = async () => {
       try {
         const [categoriesRes, routesRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/Category`),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/TransitRoutes`)
+          apiFetch(`/Category/all`),
+          apiFetch(`/TransitRoutes/all`)
         ]);
 
         if (!categoriesRes.ok || !routesRes.ok) throw new Error('Failed to load system data.');
@@ -57,10 +60,12 @@ export default function CreateVehiclePage() {
       transitRouteId: parseInt(transitRouteId)
     };
 
+    const token = sessionStorage.getItem('csrf_token');
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/Vehicle`, {
+      const response = await apiFetch(`/Vehicle`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token || '' },
         body: JSON.stringify(payload),
       });
 

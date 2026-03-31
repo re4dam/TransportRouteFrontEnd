@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { VehicleRequest, CategoryResponse, TransitRouteResponse } from '@/types';
+import { apiFetch } from '@/lib/apiClient';
+
+export const dynamic = 'force-dynamic';
 
 export default function EditVehiclePage() {
   const router = useRouter();
@@ -26,9 +29,9 @@ export default function EditVehiclePage() {
       try {
         // Fetch dropdowns and the specific vehicle simultaneously
         const [categoriesRes, routesRes, vehicleRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/Category`),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/TransitRoutes`),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/Vehicle/${vehicleId}`)
+          apiFetch(`/Category/all`),
+          apiFetch(`/TransitRoutes/all`),
+          apiFetch(`/Vehicle/${vehicleId}`, {credentials: 'include'})
         ]);
 
         if (!categoriesRes.ok || !routesRes.ok || !vehicleRes.ok) {
@@ -43,12 +46,9 @@ export default function EditVehiclePage() {
         setRoutes(routesData);
         setVehicleName(vehicleData.vehicleName);
 
-        // Map the string names from the DB back to their IDs for the dropdowns
-        const currentCat = catsData.find(c => c.categoryName === vehicleData.categoryName);
-        const currentRoute = routesData.find(r => r.routeName === vehicleData.routeName);
-        
-        if (currentCat) setCategoryId(currentCat.id.toString());
-        if (currentRoute) setTransitRouteId(currentRoute.id.toString());
+        // Replace the .find() logic with this direct assignment:
+        setCategoryId(vehicleData.categoryId.toString());
+        setTransitRouteId(vehicleData.transitRouteId.toString());
 
       } catch (err: any) {
         setError(err.message);
@@ -71,10 +71,12 @@ export default function EditVehiclePage() {
       transitRouteId: parseInt(transitRouteId)
     };
 
+    const token = sessionStorage.getItem('csrf_token');
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/Vehicle/${vehicleId}`, {
+      const response = await apiFetch(`/Vehicle/${vehicleId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token || '' },
         body: JSON.stringify(payload),
       });
 
