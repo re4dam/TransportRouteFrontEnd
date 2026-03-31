@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { CategoryResponse } from '@/types';
+import { apiFetch } from '@/lib/apiClient';
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<CategoryResponse[]>([]);
@@ -14,10 +15,11 @@ export default function CategoriesPage() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/Category`);
+        const response = await apiFetch(`/Category`);
         if (response.ok) {
           const data = await response.json();
-          setCategories(data);
+          const category = data.items;
+          setCategories(category);
         }
       } catch (err) {
         console.error(err);
@@ -35,11 +37,14 @@ export default function CategoriesPage() {
     if (!confirmed) return;
 
     setIsDeleting(id);
+
+    const token = sessionStorage.getItem('csrf_token');
     
     try {
-      // 2. Send the DELETE request to the C# API
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/Category/${id}`, {
+      const response = await apiFetch(`/Category/${id}`, {
         method: 'DELETE',
+        credentials : 'include',
+        headers: { 'X-CSRF-Token': token || '' }
       });
 
       if (!response.ok) {
