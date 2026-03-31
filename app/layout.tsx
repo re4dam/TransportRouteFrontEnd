@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar"; // Make sure this path matches where you saved it!
+import CsrfInitializer from "@/components/CsrfInitializer"; // Import the CSRF initializer
 
 export const metadata: Metadata = {
   title: "TransportRoute | Dashboard",
@@ -19,8 +20,8 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} bg-gray-50 text-gray-900 min-h-screen flex flex-col selection:bg-purple-100 selection:text-purple-900`}>
         
-        {/* We injected the smart Client Component here */}
         <Navbar />
+        <CsrfInitializer />
 
         <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 py-8">
           {children}
