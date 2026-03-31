@@ -17,7 +17,7 @@ export default function CategoryActions({ id, categoryName }: { id: number, cate
     const token = sessionStorage.getItem('csrf_token');
     
     try {
-      const response = await apiFetch(`/Categories/${id}`, {
+      const response = await apiFetch(`/Category/${id}`, {
         method: 'DELETE',
         credentials: 'include',
         headers: { 'X-CSRF-Token': token || '' }
