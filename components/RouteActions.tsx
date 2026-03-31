@@ -17,10 +17,16 @@ export default function RouteActions({ routeId }: { routeId: number }) {
 
     setIsDeleting(true);
 
+    const token = sessionStorage.getItem('csrf_token');
+
     try {
       // 2. Send the DELETE request to your C# backend
       const res = await apiFetch(`/TransitRoutes/${routeId}`, {
         method: "DELETE",
+        headers: {
+          "X-CSRF-TOKEN": token || ""
+        },
+        credentials: "include"
       });
 
       if (!res.ok) {
