@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { apiFetch } from '@/lib/apiClient';
-import CategoryActions from '@/components/CategoryActions';
+import CategoryActions from '@/components/Actions/CategoryActions';
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 

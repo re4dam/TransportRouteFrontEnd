@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { apiFetch } from '@/lib/apiClient';
-import VehicleActions from '@/components/VehicleActions';
+import VehicleActions from '@/components/Actions/VehicleActions';
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 

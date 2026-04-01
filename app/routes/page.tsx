@@ -1,4 +1,4 @@
-import RouteActions from "@/components/RouteActions";
+import RouteActions from "@/components/Actions/RouteActions";
 import Link from "next/link";
 import { TransitRouteResponse  } from "@/types";
 import { apiFetch } from "@/lib/apiClient"; 
