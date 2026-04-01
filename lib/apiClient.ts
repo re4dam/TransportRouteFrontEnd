@@ -3,8 +3,13 @@ const BASE_URL = `${API_HOST.replace(/\/$/, "")}/api`;
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     const url = `${BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
-    
-    const response = await fetch(url, options);
+
+    const requestOptions: RequestInit = {
+        credentials: "include",
+        ...options,
+    };
+
+    const response = await fetch(url, requestOptions);
 
     // 🚨 CENTRALIZED ERROR INTERCEPTOR
     if (!response.ok) {
