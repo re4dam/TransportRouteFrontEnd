@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { apiFetch } from "@/lib/apiClient";
+import { useToast } from "@/components/ToastClient";
 
 // Generate the same array of hourly times
 const timeOptions = Array.from({ length: 24 }, (_, i) => {
@@ -13,6 +14,7 @@ const timeOptions = Array.from({ length: 24 }, (_, i) => {
 
 export default function EditRoutePage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const params = useParams(); // Grabs the [id] from the URL
   const routeId = params.id;
 
@@ -82,9 +84,12 @@ export default function EditRoutePage() {
         body: JSON.stringify(formData),
       });
 
+      showToast("Route updated successfully!", "success");
+
       router.refresh();
       router.push("/routes");
     } catch (err: any) {
+      showToast(err?.message || "Failed to update route.", "error");
       setError(err.message);
       setIsSubmitting(false);
     }

@@ -4,10 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { apiFetch } from "@/lib/apiClient";
+import { useToast } from "@/components/ToastClient";
 
 export default function RouteActions({ routeId }: { routeId: number }) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
+  const { showToast } = useToast();
 
   const handleDelete = async () => {
     // 1. Add a safety confirmation so users don't accidentally delete routes
@@ -29,11 +31,12 @@ export default function RouteActions({ routeId }: { routeId: number }) {
         credentials: "include"
       });
 
+      showToast("Route deleted successfully!", "success");
       // 3. Force Next.js to re-fetch the server component data to remove the item from the screen
       router.refresh();
     } catch (error) {
       console.error(error);
-      alert("An error occurred while deleting the route.");
+      showToast("An error occurred while deleting the route.", "error");
       setIsDeleting(false); // Only reset if it fails, otherwise let it unmount
     }
   };

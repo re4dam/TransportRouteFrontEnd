@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { apiFetch } from "@/lib/apiClient";
+import { useToast } from "@/components/ToastClient";
 
 // Generate an array of hourly times from "00:00" to "23:00"
 const timeOptions = Array.from({ length: 24 }, (_, i) => {
@@ -13,6 +14,7 @@ const timeOptions = Array.from({ length: 24 }, (_, i) => {
 
 export default function CreateRoutePage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -48,10 +50,13 @@ export default function CreateRoutePage() {
         credentials: 'include',
         body: JSON.stringify(formData),
       });
+
+      showToast("Route created successfully!", "success");
       
       router.refresh();
       router.push("/routes");
     } catch (err: any) {
+      showToast(err?.message || "Failed to create route.", "error");
       setError(err.message);
       setIsSubmitting(false);
     }
