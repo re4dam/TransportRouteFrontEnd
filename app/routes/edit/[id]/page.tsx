@@ -68,10 +68,17 @@ export default function EditRoutePage() {
     setIsSubmitting(true);
     setError("");
 
+    const token = sessionStorage.getItem('csrf_token');
+
     try {
       // Send the PUT request to update the specific record
       const res = await apiFetch(`/TransitRoutes/${routeId}`, {
         method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-TOKEN": token || ""
+        },
+        credentials: "include",
         body: JSON.stringify(formData),
       });
 
@@ -80,7 +87,7 @@ export default function EditRoutePage() {
       }
 
       router.refresh();
-      router.push("/");
+      router.push("/routes");
     } catch (err: any) {
       setError(err.message);
       setIsSubmitting(false);
@@ -98,7 +105,7 @@ export default function EditRoutePage() {
   return (
     <div className="max-w-2xl mx-auto w-full">
       <div className="mb-8">
-        <Link href="/" className="text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-2 mb-4 transition-colors">
+        <Link href="/routes" className="text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-2 mb-4 transition-colors">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>

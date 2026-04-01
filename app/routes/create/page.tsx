@@ -36,11 +36,14 @@ export default function CreateRoutePage() {
     setIsSubmitting(true);
     setError("");
 
+    const token = sessionStorage.getItem('csrf_token');
+
     try {
       const res = await apiFetch(`/TransitRoutes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-CSRF-TOKEN": token || ""
         },
         body: JSON.stringify(formData),
       });

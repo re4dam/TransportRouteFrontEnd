@@ -6,40 +6,33 @@ import { apiFetch } from "@/lib/apiClient";
 // Next.js 15 treats searchParams as a Promise
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
-// We update our fetcher to handle the two different C# endpoints
-async function getTransitRoutes(keyword?: string, pageNumber: number = 1) {
-  if (keyword) {
-    // Hit the Paginated Search Endpoint
-    const res = await apiFetch(`/TransitRoutes/search?keyword=${encodeURIComponent(keyword)}&pageNumber=${pageNumber}&pageSize=10`, {
-      cache: 'no-store'
-    });
-    
-    if (res.status === 404) return { items: [], totalPages: 0, currentPage: 1 };
-    if (!res.ok) throw new Error('Failed to fetch search results');
-    
-    return res.json(); // Returns the PaginatedResponseDto shape
-  } else {
-    // Hit the standard GET Endpoint
-    const res = await apiFetch(`/TransitRoutes`, { cache: 'no-store' });
-    if (!res.ok) throw new Error('Failed to fetch routes');
-    
-    const data = await res.json();
-    // We wrap the raw array in an object so the component UI logic remains the same
-    return { items: data, totalPages: 1, currentPage: 1 };
-  }
-}
-
 export default async function Home(props: { searchParams: SearchParams }) {
-  // Await the search parameters
+  // 1. Read the URL parameters
   const searchParams = await props.searchParams;
-  const keyword = typeof searchParams.keyword === 'string' ? searchParams.keyword : undefined;
-  const pageNumber = typeof searchParams.page === 'string' ? parseInt(searchParams.page, 10) : 1;
+  const pageParam = typeof searchParams.page === 'string' ? parseInt(searchParams.page, 10) : 1;
+  const currentPage = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
 
-  // Fetch the data
-  const { items: liveRoutes, totalPages, currentPage } = await getTransitRoutes(keyword, pageNumber);
+  // 2. Fetch paginated routes from backend
+  let liveRoutes: TransitRouteResponse[] = [];
+  let totalPages = 0;
+  let totalCount = 0;
+
+  try {
+    const endpoint = `/TransitRoutes?pageNumber=${currentPage}&pageSize=12`;
+    const res = await apiFetch(endpoint, { cache: 'no-store' });
+
+    if (res.ok) {
+      const data = await res.json();
+      liveRoutes = data.items ?? [];
+      totalPages = data.totalPages ?? 0;
+      totalCount = data.totalCount ?? liveRoutes.length;
+    }
+  } catch (error) {
+    console.error("Failed to fetch routes:", error);
+  }
 
   return (
-    <div className="flex flex-col gap-8 w-full">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="flex justify-between items-end border-b-2 border-indigo-100 pb-4">
         <div>
           <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 tracking-tight">
@@ -55,13 +48,22 @@ export default async function Home(props: { searchParams: SearchParams }) {
         </Link>
       </div>
 
+      {/* Stats Badge */}
+      <div className="mb-6 mt-4 flex items-center gap-2">
+        <span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
+          {totalCount} Total
+        </span>
+      </div>
+
       {liveRoutes.length === 0 ? (
-        <div className="bg-white rounded-2xl p-12 text-center border border-slate-100 shadow-sm">
-          <p className="text-slate-500 text-lg font-medium">No routes found matching your criteria.</p>
-          {keyword && <Link href="/" className="text-indigo-600 font-bold mt-4 inline-block hover:underline">Clear Search</Link>}
+        <div className="bg-white rounded-2xl p-12 text-center border border-slate-100 shadow-sm mt-6">
+          <p className="text-slate-500 text-lg font-medium">No routes found.</p>
+          <Link href="/" className="text-indigo-600 font-bold mt-4 inline-block hover:underline">
+            Go Back Home
+          </Link>
         </div>
       ) : (
-        <ul className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
           {liveRoutes.map((route: TransitRouteResponse) => (
             <li 
               key={route.id} 
@@ -98,29 +100,37 @@ export default async function Home(props: { searchParams: SearchParams }) {
         </ul>
       )}
 
-      {/* Pagination Controls - Only show if we have more than 1 page */}
+      {/* Pagination Controls */}
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-4 mt-8 pt-4 border-t border-slate-100">
-          {currentPage > 1 && (
+          {currentPage > 1 ? (
             <Link 
-              href={`/?keyword=${keyword}&page=${currentPage - 1}`}
+              href={`/routes?page=${currentPage - 1}`}
               className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors shadow-sm"
             >
               &larr; Previous
             </Link>
+          ) : (
+            <span className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-bold text-gray-400 opacity-50 cursor-not-allowed">
+              &larr; Previous
+            </span>
           )}
-          
+
           <span className="text-sm font-medium text-slate-500">
             Page {currentPage} of {totalPages}
           </span>
 
-          {currentPage < totalPages && (
+          {currentPage < totalPages ? (
             <Link 
-              href={`/?keyword=${keyword}&page=${currentPage + 1}`}
+              href={`/routes?page=${currentPage + 1}`}
               className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors shadow-sm"
             >
               Next &rarr;
             </Link>
+          ) : (
+            <span className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-bold text-gray-400 opacity-50 cursor-not-allowed">
+              Next &rarr;
+            </span>
           )}
         </div>
       )}
