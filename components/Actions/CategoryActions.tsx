@@ -4,10 +4,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch } from '@/lib/apiClient';
 import Link from 'next/link';
+import { useToast } from "@/components/ToastClient";
 
 export default function CategoryActions({ id, categoryName }: { id: number, categoryName: string }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
+  const { showToast } = useToast();
 
   const handleDelete = async () => {
     const confirmed = window.confirm(`Are you sure you want to delete the "${categoryName}" category?\n\nWarning: Depending on your database rules, this might also delete all vehicles assigned to this category!`);
@@ -23,11 +25,11 @@ export default function CategoryActions({ id, categoryName }: { id: number, cate
         headers: { 'X-CSRF-Token': token || '' }
       });
 
-      // Success! This tells the Next.js Server Component to instantly re-fetch the data!
+      showToast('Category deleted successfully!', 'success');
       router.refresh(); 
       
     } catch (err: any) {
-      alert(err.message); 
+      showToast(err?.message || "Failed to connect to the server.", 'error');
     } finally {
       setIsDeleting(false);
     }

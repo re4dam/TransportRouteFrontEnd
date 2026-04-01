@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { VehicleRequest, CategoryResponse, TransitRouteResponse } from '@/types';
 import { apiFetch } from '@/lib/apiClient';
+import { useToast } from "@/components/ToastClient";
 
 export const dynamic = 'force-dynamic';
 
 export default function CreateVehiclePage() {
   const router = useRouter();
+  const { showToast } = useToast();
   
   // Form State
   const [vehicleName, setVehicleName] = useState('');
@@ -69,10 +71,11 @@ export default function CreateVehiclePage() {
         credentials: 'include',
         body: JSON.stringify(payload),
       });
+      showToast('Vehicle created successfully!', 'success');
 
       router.push('/vehicles'); 
     } catch (err: any) {
-      setError(err.message);
+      showToast(err?.message || "Failed to connect to the server.", 'error');
       setIsSubmitting(false);
     }
   };

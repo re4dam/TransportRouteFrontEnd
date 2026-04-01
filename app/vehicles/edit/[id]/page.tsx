@@ -5,11 +5,13 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { VehicleRequest, CategoryResponse, TransitRouteResponse } from '@/types';
 import { apiFetch } from '@/lib/apiClient';
+import { useToast } from "@/components/ToastClient";
 
 export const dynamic = 'force-dynamic';
 
 export default function EditVehiclePage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const params = useParams();
   const vehicleId = params.id;
 
@@ -81,9 +83,10 @@ export default function EditVehiclePage() {
         body: JSON.stringify(payload),
       });
 
+      showToast('Vehicle updated successfully!', 'success');
       router.push('/vehicles');
     } catch (err: any) {
-      setError(err.message);
+      showToast(err?.message || "Failed to connect to the server.", 'error');
       setIsSubmitting(false);
     }
   };
