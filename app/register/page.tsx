@@ -8,6 +8,7 @@ import { useToast } from "@/components/ToastClient";
 export default function RegisterPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
+    email: "",
     username: "",
     password: "",
   });
@@ -59,6 +60,18 @@ export default function RegisterPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
+            <input
+              type="email"
+              name="email"
+              required
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full rounded border px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Username</label>
             <input

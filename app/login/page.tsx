@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/apiClient";
 import { useToast } from "@/components/ToastClient";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -93,6 +94,14 @@ export default function LoginPage() {
             </div>
           </div>
 
+          <div className="flex items-center justify-end">
+            <div className="text-sm">
+              <Link href="/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-500">
+                Forgot your password?
+              </Link>
+            </div>
+          </div>
+
           <button
             type="submit"
             disabled={isLoading || isSubmitting}
@@ -101,6 +110,14 @@ export default function LoginPage() {
             {isLoading ? "Logging in..." : "Log In"}
           </button>
         </form>
+        
+        <div className="mt-6 text-center text-sm">
+          <span className="text-gray-600">Not a member yet? </span>
+          <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
+            Register here
+          </Link>
+        </div>
+
       </div>
     </div>
   );
