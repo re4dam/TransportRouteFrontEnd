@@ -3,6 +3,7 @@ import Link from "next/link";
 import { TransitRouteResponse  } from "@/types";
 import { apiFetch } from "@/lib/apiClient"; 
 import SearchBar from "@/components/SearchBar";
+import RouteCreateButton from "@/components/CreateButton/RouteCreateButton";
 
 // Next.js 15 treats searchParams as a Promise
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -52,12 +53,7 @@ export default async function Home(props: { searchParams: SearchParams }) {
         </div>
         <div className="flex items-center gap-4">
           <SearchBar placeholder="Search routes..." />
-          <Link
-            href="/routes/create"
-            className="group relative inline-flex items-center justify-center px-6 py-3 text-base font-bold text-white transition-all duration-200 bg-indigo-600 rounded-xl hover:bg-indigo-700 hover:-translate-y-0.5 shadow-lg shadow-indigo-500/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 whitespace-nowrap"
-          >
-            <span className="mr-2">+</span> Create Routes
-          </Link>
+          <RouteCreateButton />
         </div>
       </div>
 
