@@ -37,6 +37,12 @@ export default function LoginPage() {
         body: JSON.stringify(formData),
       });
 
+      const data = await res.json();
+
+      if (data.roles) {
+        localStorage.setItem('userRoles', JSON.stringify(data.roles));
+      }
+
       showToast('Login successful! Redirecting...', 'success');
 
       localStorage.setItem("isLoggedIn", "true"); // Set a simple flag for our Navbar

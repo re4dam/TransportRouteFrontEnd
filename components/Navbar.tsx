@@ -29,8 +29,9 @@ export default function Navbar() {
       await apiFetch('/Auth/logout', { method: 'POST' });
       
       // 2. Clear our UI flag
-      localStorage.removeItem('isLoggedIn');
       setIsLoggedIn(false);
+      localStorage.removeItem('isLoggedIn');
+      localStorage.removeItem('userRoles');
       
       // 3. Redirect to login
       router.push('/login');
