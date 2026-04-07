@@ -10,7 +10,8 @@ export default function VehicleArchivesPage() {
                 domainName="Vehicle"
                 fetchEndpoint="/Vehicle/archives"
                 restoreEndpointTemplate="/Vehicle/{id}/restore"
-                activeEntitiesPath='vehicles/'
+                deleteEndpointTemplate="/Vehicle/{id}"
+                activeEntitiesPath="/vehicles"
             />
         </div>
     );

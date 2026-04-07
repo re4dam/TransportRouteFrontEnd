@@ -10,7 +10,8 @@ export default function RouteArchivesPage() {
                 domainName="Route"
                 fetchEndpoint="/TransitRoutes/archives"
                 restoreEndpointTemplate="/TransitRoutes/{id}/restore"
-                activeEntitiesPath="routes/"
+                deleteEndpointTemplate="/TransitRoutes/{id}"
+                activeEntitiesPath="/routes"
             />
         </div>
     );

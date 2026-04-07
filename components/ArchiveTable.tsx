@@ -18,6 +18,7 @@ interface ArchiveTableProps {
     domainName: string;          
     fetchEndpoint: string;       
     restoreEndpointTemplate: string; 
+    deleteEndpointTemplate: string;
     activeEntitiesPath: string;  // Where to send them if the archive is empty (e.g., "/routes")
 }
 
@@ -25,16 +26,19 @@ export default function GenericArchiveTable({
     domainName, 
     fetchEndpoint, 
     restoreEndpointTemplate,
+    deleteEndpointTemplate,
     activeEntitiesPath 
 }: ArchiveTableProps) {
     const [data, setData] = useState<ArchiveItemDto[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isAuthorized, setIsAuthorized] = useState(false);
+    const [isSuperAdmin, setIsSuperAdmin] = useState(false);
     
     // UI Enhancements State
     const [searchQuery, setSearchQuery] = useState('');
     const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
     const [restoringId, setRestoringId] = useState<number | null>(null); // Row-level loading
+    const [deletingId, setDeletingId] = useState<number | null>(null);
     const [confirmModal, setConfirmModal] = useState<{isOpen: boolean, item: ArchiveItemDto | null}>({ isOpen: false, item: null });
 
     const router = useRouter();
@@ -47,6 +51,7 @@ export default function GenericArchiveTable({
             const roles = JSON.parse(storedRoles);
             if (roles.includes('SuperAdmin') || roles.includes('RouteManager')) {
                 setIsAuthorized(true);
+                setIsSuperAdmin(roles.includes('SuperAdmin'));
                 fetchData();
                 return;
             }
@@ -91,6 +96,34 @@ export default function GenericArchiveTable({
         }
     };
 
+    const executeDelete = async (item: ArchiveItemDto) => {
+        if (!isSuperAdmin) return;
+
+        const confirmed = window.confirm(
+            `Permanently delete ${domainName} "${item.primaryText}"?\n\nThis action cannot be undone.`
+        );
+        if (!confirmed) return;
+
+        setDeletingId(item.id);
+        const token = sessionStorage.getItem('csrf_token');
+
+        try {
+            const endpoint = deleteEndpointTemplate.replace('{id}', item.id.toString());
+            await apiFetch(endpoint, {
+                method: 'DELETE',
+                credentials: 'include',
+                headers: { 'X-CSRF-Token': token || '' }
+            });
+
+            showToast(`${domainName} permanently deleted`, 'success');
+            setData(current => current.filter(entry => entry.id !== item.id));
+        } catch (error: any) {
+            showToast(error.message || `Failed to permanently delete ${domainName}`, 'error');
+        } finally {
+            setDeletingId(null);
+        }
+    };
+
     // 🚨 3. Client-Side Search & Sort
     const filteredAndSortedData = useMemo(() => {
         let processed = data.filter(item => 
@@ -129,6 +162,15 @@ export default function GenericArchiveTable({
 
     return (
         <div className="mt-6">
+            <div className="mb-4 flex justify-start">
+                <button
+                    onClick={() => router.push(activeEntitiesPath)}
+                    className="inline-flex items-center px-4 py-2 border border-gray-200 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                >
+                    &larr; Return to Active {domainName}s
+                </button>
+            </div>
+
             {/* The Toolbar */}
             <div className="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-3 sm:space-y-0">
                 <input 
@@ -188,22 +230,35 @@ export default function GenericArchiveTable({
 
                                 {/* Column 3: Actions */}
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button 
-                                        onClick={() => setConfirmModal({ isOpen: true, item })}
-                                        disabled={restoringId === item.id}
-                                        className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white transition-all 
-                                            ${restoringId === item.id ? 'bg-green-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'}`}
-                                        aria-live="polite"
-                                    >
-                                        {restoringId === item.id ? (
-                                            <span className="flex items-center">
-                                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                                                Restoring...
-                                            </span>
-                                        ) : (
-                                            "Restore Asset"
+                                    <div className="flex justify-end gap-2">
+                                        <button 
+                                            onClick={() => setConfirmModal({ isOpen: true, item })}
+                                            disabled={restoringId === item.id || deletingId === item.id}
+                                            className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white transition-all 
+                                                ${restoringId === item.id ? 'bg-green-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'}`}
+                                            aria-live="polite"
+                                        >
+                                            {restoringId === item.id ? (
+                                                <span className="flex items-center">
+                                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                                    Restoring...
+                                                </span>
+                                            ) : (
+                                                "Restore Asset"
+                                            )}
+                                        </button>
+
+                                        {isSuperAdmin && (
+                                            <button
+                                                onClick={() => executeDelete(item)}
+                                                disabled={deletingId === item.id || restoringId === item.id}
+                                                className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white transition-all 
+                                                    ${deletingId === item.id ? 'bg-red-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500'}`}
+                                            >
+                                                {deletingId === item.id ? 'Deleting...' : 'Delete Permanently'}
+                                            </button>
                                         )}
-                                    </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
